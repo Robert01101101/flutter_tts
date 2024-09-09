@@ -112,6 +112,7 @@ class FlutterTtsPlugin {
       channel.invokeMethod("speak.onError", event["error"]);
     };
 
+    logger.t('setting listener boundary');
     utterance["boundary"] = (Object e) {
       //set state?
 
