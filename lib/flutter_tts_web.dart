@@ -19,6 +19,21 @@ var logger = kIsWeb
 
 enum TtsState { playing, stopped, paused, continued }
 
+class UtteranceManager {
+  static final UtteranceManager _instance = UtteranceManager._internal();
+  factory UtteranceManager() => _instance;
+  UtteranceManager._internal();
+
+  final List<js.JsObject> _utterances = [];
+
+  void addUtterance(js.JsObject utterance) {
+    _utterances.add(utterance);
+  }
+
+  List<js.JsObject> get utterances => _utterances;
+}
+
+
 class FlutterTtsPlugin {
   static const String platformChannel = "flutter_tts";
   static late MethodChannel channel;
@@ -56,7 +71,7 @@ class FlutterTtsPlugin {
           js.context["SpeechSynthesisUtterance"] as js.JsFunction, [""]);
       synth = js.JsObject.fromBrowserObject(
           js.context["speechSynthesis"] as js.JsObject);
-      utterances.add(utterance);
+      UtteranceManager().addUtterance(utterance);
       _listeners();
       supported = true;
     } catch (e) {
