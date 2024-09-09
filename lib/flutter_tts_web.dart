@@ -1,9 +1,19 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:js' as js;
+import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart' as logger_mobile;
+import 'package:logger/logger.dart';
+import 'package:logger/web.dart' as logger_web;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
+var logger = kIsWeb
+    ? logger_web.Logger(level: logger_web.Level.all,
+    filter: ProductionFilter())
+    : logger_mobile.Logger(level: logger_mobile.Level.all,
+    filter: ProductionFilter());
 
 enum TtsState { playing, stopped, paused, continued }
 
@@ -103,17 +113,21 @@ class FlutterTtsPlugin {
     };
 
     utterance["onboundary"] = (Object e) {
+      logger.t('onboundary');
       var event = js.JsObject.fromBrowserObject(e);
       int charIndex = event['charIndex'] as int;
       String name = event['name'] as String;
+      logger.t('onboundary: $name, $charIndex');
       if (name == 'sentence') return;
       String text = utterance['text'] as String;
+      logger.t('onboundary calculating end index');
       int endIndex = charIndex;
       while (endIndex < text.length &&
           !RegExp(r'[\s,.!?]').hasMatch(text[endIndex])) {
         endIndex++;
       }
       String word = text.substring(charIndex, endIndex);
+      logger.t('onboundary, done calculating end index, word: $word, endIndex: $endIndex');
       Map<String, dynamic> sampleArgs = {
         'text': text,
         'start': charIndex,
