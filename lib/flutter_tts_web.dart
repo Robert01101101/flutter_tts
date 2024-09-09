@@ -9,6 +9,8 @@ import 'package:logger/web.dart' as logger_web;
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
+List<js.JsObject> utterances = [];
+
 var logger = kIsWeb
     ? logger_web.Logger(level: logger_web.Level.all,
     filter: ProductionFilter())
@@ -54,6 +56,7 @@ class FlutterTtsPlugin {
           js.context["SpeechSynthesisUtterance"] as js.JsFunction, [""]);
       synth = js.JsObject.fromBrowserObject(
           js.context["speechSynthesis"] as js.JsObject);
+      utterances.add(utterance);
       _listeners();
       supported = true;
     } catch (e) {
@@ -112,8 +115,7 @@ class FlutterTtsPlugin {
       channel.invokeMethod("speak.onError", event["error"]);
     };
 
-    logger.t('setting listener boundary');
-    utterance["boundary"] = (Object e) {
+    /*utterance["boundary"] = (Object e) {
       //set state?
 
       logger.t('boundary');
@@ -149,17 +151,32 @@ class FlutterTtsPlugin {
         'start': charIndex,
         'end': endIndex,
         'word': word
-      };
-    /*
+      };*/
+
+    logger.t('setting listener onboundary');
     utterance["onboundary"] = (Object e) {
+      //set state?
+
       logger.t('onboundary');
       var event = js.JsObject.fromBrowserObject(e);
+
+      //not sure if these could ever be null, do we need null safety?
       int charIndex = event['charIndex'] as int;
       String name = event['name'] as String;
+
       logger.t('onboundary: $name, $charIndex');
+
+      //assuming we don't want to know about new sentences
       if (name == 'sentence') return;
+
+      //is utterance['text'] always available?
       String text = utterance['text'] as String;
+
+
+
       logger.t('onboundary calculating end index');
+      //calculate end index, use start and end index to get word (not sure if the RegEx correctly matches the
+      //characters that are considered word boundaries in SpeechSynthesisUtterance / browser tts)
       int endIndex = charIndex;
       while (endIndex < text.length &&
           !RegExp(r'[\s,.!?]').hasMatch(text[endIndex])) {
@@ -167,13 +184,14 @@ class FlutterTtsPlugin {
       }
       String word = text.substring(charIndex, endIndex);
       logger.t('onboundary, done calculating end index, word: $word, endIndex: $endIndex');
+
       Map<String, dynamic> sampleArgs = {
         'text': text,
         'start': charIndex,
         'end': endIndex,
         'word': word
       };
-      };*/
+
       channel.invokeMethod("speak.onProgress", sampleArgs);
     };
   }
