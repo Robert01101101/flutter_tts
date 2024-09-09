@@ -1,3 +1,9 @@
+# Notes on this fork of flutter_tts
+
+This fork is intended to add support for progress events on web. I've opened a PR to merge the changes back into the official `flutter_tts` package, but in the meantime, you can use the version in this repository at the `web_progress_handler` branch.
+
+There are some limitations I've found for certain voices on Chrome, see my notes on that [here](https://github.com/dlutton/flutter_tts/pull/526).
+
 # Text To Speech
 
 [![pub package](https://img.shields.io/pub/v/flutter_tts.svg?style=for-the-badge&colorB=green)](https://pub.dartlang.org/packages/flutter_tts)
